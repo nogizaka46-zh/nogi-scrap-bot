@@ -2,7 +2,8 @@ import asyncio
 import aiohttp
 import time
 # from typing import List
-from lxml import html
+from lxml import etree as et
+from io import StringIO
 
 from config.logger import Logger
 from config.data import DataLoader
@@ -27,11 +28,12 @@ async def scrape_data(session, url: str) -> None:
     async with session.request('GET', url) as response:
         text = await response.text()
         if response.status == 200:
-            print(text)
-            tree = html.fromstring(text)
-            blog_titles = tree.find_class("ba--mmsel__pc__one")
-            [result.append(html.tostring(title)) for title in blog_titles]
-    # print(result)
+            root = et.XML(bytes(text, encoding='utf8'))
+            tree = et.ElementTree(root)
+            author = tree.xpath('//author/text()')
+            print("author", author)
+            # [result.append(html.tostring(title)) for title in blog_titles]
+    print(result)
 
 
 def create_task_queue(session):
