@@ -1,16 +1,18 @@
 import asyncio
 import aiohttp
 import time
-# from typing import List
+import json
+from typing import List
 from lxml import etree as et
-from io import StringIO
 
 from config.logger import Logger
 from config.data import DataLoader
+from telegram import NogiBot
 
 
 logger = Logger()
 config = DataLoader().load_data()
+bot = NogiBot()
 
 """test block starts"""
 headers = {
@@ -23,17 +25,21 @@ headers = {
 }
 
 
-async def scrape_data(session, url: str) -> None:
+async def scrape_data(session, url: str) -> List[object]:
     result = []
     async with session.request('GET', url) as response:
         text = await response.text()
         if response.status == 200:
             root = et.XML(bytes(text, encoding='utf8'))
             tree = et.ElementTree(root)
-            author = tree.xpath('//author/text()')
-            print("author", author)
-            # [result.append(html.tostring(title)) for title in blog_titles]
-    print(result)
+            [result.append({
+                'author': tree.xpath('//item/author/text()')[i],
+                'title': tree.xpath('//item/title/text()')[i],
+                'link': tree.xpath('//item/link/text()')[i],
+                'date': tree.xpath('//item/pubDate/text()')[i],
+                'permalink': tree.xpath('//item/guid/text()')[i]
+            }) for i in range(len(tree.xpath('//item')))]
+    return(result)
 
 
 def create_task_queue(session):
@@ -47,7 +53,8 @@ async def exec():
     async with aiohttp.ClientSession() as session:
         tasks = create_task_queue(session)
         responses = await asyncio.gather(*tasks)
-        [logger.info(item) for item in responses]
+        # next task
+        bot.post_message(responses[0][0])
 
 
 if __name__ == '__main__':
