@@ -1,13 +1,17 @@
+import os
 import telebot
 import json
 from time import sleep
 from dataclasses import dataclass, field
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 @dataclass
 class NogiBot():
-    chat_id: str = "-860326913"
-    api_token: str = "5654645197:AAHpnP4NW9-QwqMm8gIUExvq7swbgL2afvU"
+    chat_id: str = os.getenv("CHAT_ID")
+    api_token: str = os.getenv("API_TOKEN")
     bot: telebot.TeleBot = field(init=False)
 
     def __post_init__(self):
@@ -15,8 +19,9 @@ class NogiBot():
 
     def post_message(self, payload) -> None:
         try:
+            author = payload["author"].replace(" ", "")
             markdown = f"""
-#{ payload["author"] } 「{ payload["title"] }」
+#{ author } 「{ payload["title"] }」
 
 { payload["date"] }
 
