@@ -1,4 +1,4 @@
 # nogi-scrap-bot
 
-> **Notes**
+> **Note**
 > Some good notes
