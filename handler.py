@@ -33,11 +33,12 @@ async def scrape_data(session, url: str) -> List[object]:
             root = et.XML(bytes(text, encoding='utf8'))
             tree = et.ElementTree(root)
             [result.append({
+                'guid': tree.xpath('//item/guid/text()')[i].split('/')[-1],
                 'author': tree.xpath('//item/author/text()')[i],
                 'title': tree.xpath('//item/title/text()')[i],
                 'link': tree.xpath('//item/link/text()')[i],
-                'date': tree.xpath('//item/pubDate/text()')[i],
-                'permalink': tree.xpath('//item/guid/text()')[i]
+                'permalink': tree.xpath('//item/guid/text()')[i],
+                'date': tree.xpath('//item/pubDate/text()')[i]
             }) for i in range(len(tree.xpath('//item')))]
     return(result)
 
@@ -54,7 +55,8 @@ async def exec():
         tasks = create_task_queue(session)
         responses = await asyncio.gather(*tasks)
         # next task
-        bot.post_message(responses[0][0])
+        print(responses[0][0])
+        # bot.post_message(responses[0][0])
 
 
 if __name__ == '__main__':
