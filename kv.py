@@ -26,6 +26,8 @@ class BlogMeta():
 
 @dataclass
 class Cloudflare():
+
+    data: dict = field(default_factory=dict)
     account_id: str = os.getenv("CLOUDFLARE_ACCOUNT_ID")
     namespace: str = os.getenv("CLOUDFLARE_NAMESPACE_ID")
     email: str = os.getenv("CLOUDFLARE_ACCOUNT_EMAIL")
@@ -33,7 +35,6 @@ class Cloudflare():
     headers: dict = field(init=False)
     base_url: str = field(init=False)
     query_limit: Optional[str] = 10
-    data: dict = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         self.base_url = f"https://api.cloudflare.com/client/v4/accounts/{self.account_id}/storage/kv/namespaces/{self.namespace}"
@@ -42,9 +43,6 @@ class Cloudflare():
             "X-Auth-Key": os.getenv("CLOUDFLARE_API_TOKEN"),
             "Content-Type": "application/json"
         }
-
-    def form_payload(self, data) -> None:
-        self.data = data
 
     async def exec_api(self):
         async with aiohttp.ClientSession(headers=self.headers) as session:
@@ -99,7 +97,6 @@ if __name__ == '__main__':
         permalink='https://www.nogizaka46.com/s/n46/diary/detail/100683',
         date='Fri, 09 Sep 2022 07:09:09 GMT'
     )
-    cf = Cloudflare()
-    cf.form_payload(data.__dict__)
+    cf = Cloudflare(data=data.__dict__)
     asyncio.run(cf.exec_api())
     logger.info(f"Duration - {round(time.perf_counter() - start, 2)} seconds.")
